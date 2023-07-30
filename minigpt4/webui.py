@@ -104,7 +104,7 @@ def start(share: bool):
         )
         # stop.click(fn=None, inputs=None, outputs=None, cancels=[submit_click_event, message_submit_event], queue=False)
 
-    demo.launch(enable_queue=True, share=share)
+    demo.launch(server_name="0.0.0.0", server_port=7860, enable_queue=True, share=share)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Test loading minigpt4')
