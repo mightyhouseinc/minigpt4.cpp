@@ -7,10 +7,9 @@ def quantize(lib, src_path, dst_path, quantization):
     lib.minigpt4_quantize_model(src_path, dst_path, quantization)
 
 if __name__ == "__main__":
-    name_to_data_type = {}
-    for e in minigpt4_library.DataType:
-        name_to_data_type[str(e).removeprefix('DataType.')] = e
-
+    name_to_data_type = {
+        str(e).removeprefix('DataType.'): e for e in minigpt4_library.DataType
+    }
     parser = argparse.ArgumentParser(description='Quantize minigpt4.cpp model file')
     parser.add_argument('src_path', help='Path to checkpoint file')
     parser.add_argument('dst_path', help='Path to output file')

@@ -19,10 +19,7 @@ from minigpt4.processors.blip_processors import Blip2ImageEvalProcessor
 
 def align_to_next_page(pos):
     PAGE_SIZE=4096
-    if (PAGE_SIZE - 1) & pos:
-        return (pos + PAGE_SIZE) & ~(PAGE_SIZE - 1)
-    else:
-        return pos
+    return (pos + PAGE_SIZE) & ~(PAGE_SIZE - 1) if (PAGE_SIZE - 1) & pos else pos
     
 class FILE_VERSION(enum.IntEnum):
     UNK = 0
@@ -63,9 +60,7 @@ def write_int(f, v):
 
 def load_vocab(path):
     with open(path, 'r') as f:
-        j = json.load(f)
-
-        return j
+        return json.load(f)
 
 def load_config(path):
     with open(path, 'r') as f:
@@ -95,8 +90,6 @@ def write_model(f, model_name, model, ftype):
         data_type_name = ndarray.dtype
         shape = [*ndarray.shape]
         shape.reverse()
-        ndims = len(shape)
-
         # print(data_type_name, data_type_name == np.float32, data_type_to_enum[np.float32])
 
         data_type = data_type_to_enum[data_type_name]
@@ -105,12 +98,13 @@ def write_model(f, model_name, model, ftype):
         if ftype == FTYPE.F16:
             if model_name != 'query_tokens' and model_name != 'ln_vision' \
                 and ('norm' not in model_name or 'Norm' not in model_name):
+                ndims = len(shape)
+
                 if layer_name.endswith('weight') and ndims >= 2:
                     ndarray = ndarray.astype('float16')
                     data_type = DATA_TYPE.F16
                     performed_conversion = True
-        
-        # TODO: ggml doesn't support f32 conv2d..., force f16
+
         elif layer_name == 'patch_embed.proj.weight':
             ndarray = ndarray.astype('float16')
             data_type = DATA_TYPE.F16
@@ -122,7 +116,7 @@ def write_model(f, model_name, model, ftype):
 
         # name
         write_string(f, layer_name)
-        
+
         # shape
         write_int(f, len(shape))
         f.write(struct.pack(f"{ENDIANNESS}{len(shape)}i", *shape))
@@ -139,7 +133,9 @@ def write_model(f, model_name, model, ftype):
         cur_pos = f.tell()
         f.seek(align_to_next_page(cur_pos))
         ndarray = name_to_ndarrays[layer_name]
-        print(f"[{i+1:{padi}d}/{len(model)}] Writing tensor {model_name + '.' + layer_name:48s} | size {ndarray.nbytes:16} | type {str(ndarray.dtype):8s} | shape {ndarray.shape}")
+        print(
+            f"[{i + 1:{padi}d}/{len(model)}] Writing tensor {f'{model_name}.{layer_name}':48s} | size {ndarray.nbytes:16} | type {str(ndarray.dtype):8s} | shape {ndarray.shape}"
+        )
         ndarray.tofile(f)
     print('======================')
 
@@ -159,9 +155,7 @@ def write_file(outfile, minigpt4, ftype_string):
         write_int(f, ftype)
 
         # write config
-        config = {}
-        config['ftype'] = ftype_string
-        config['Qformer'] = minigpt4.Qformer.config.__dict__
+        config = {'ftype': ftype_string, 'Qformer': minigpt4.Qformer.config.__dict__}
         config_json = json.dumps(config)
         write_string(f, config_json)
         print(json.dumps(config, indent=2))
@@ -253,10 +247,7 @@ def main():
     ftype_string = args.ftype
 
     minigpt4 = MiniGPT4(pretrained_minigpt4_path)
-    model_size = '13B'
-    if minigpt4.is_7b:
-        model_size = '7B'
-
+    model_size = '7B' if minigpt4.is_7b else '13B'
     cwd = Path.cwd()
     outfile = cwd / f'minigpt4-{model_size}-{ftype_string}.bin'
 

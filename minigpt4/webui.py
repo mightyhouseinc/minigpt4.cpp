@@ -33,13 +33,7 @@ def chat(history, limit: int = 1024, temp: float = 0.8, top_k: int = 40, top_p: 
     message = history[-1][0]
 
     history[-1][1] = ""
-    for output in minigpt4_chatbot.generate(
-        message,
-        limit = int(limit),
-        temp = float(temp),
-        top_k = int(top_k),
-        top_p = float(top_p),
-    ):
+    for output in minigpt4_chatbot.generate(message, limit=limit, temp=temp, top_k=top_k, top_p=top_p):
         answer = output
         history[-1][1] += answer
         # stream the response

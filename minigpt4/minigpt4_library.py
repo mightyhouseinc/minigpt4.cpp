@@ -627,10 +627,10 @@ class MiniGPT4ChatBot:
             mirostat_eta (float, optional): Mirostat eta. Defaults to 1.0.
             penalize_nl (int, optional): Penalize NL. Defaults to 1.
         """
+        chat = ''
         if self.is_image_chat:
             self.is_image_chat = False
             self.library.minigpt4_begin_chat_image(self.ctx, self.embedding, message, self.n_threads)
-            chat = ''
             for _ in range(limit):
                 token = self.library.minigpt4_end_chat_image(self.ctx, self.n_threads, temp, top_k, top_p, tfs_z, typical_p, repeat_last_n, repeat_penalty, alpha_presence, alpha_frequency, mirostat, mirostat_tau, mirostat_eta, penalize_nl)
                 chat += token
@@ -641,7 +641,6 @@ class MiniGPT4ChatBot:
                 yield token
         else:
             self.library.minigpt4_begin_chat(self.ctx, message, self.n_threads)
-            chat = ''
             for _ in range(limit):
                 token = self.library.minigpt4_end_chat(self.ctx, self.n_threads, temp, top_k, top_p, tfs_z, typical_p, repeat_last_n, repeat_penalty, alpha_presence, alpha_frequency, mirostat, mirostat_tau, mirostat_eta, penalize_nl)
                 chat += token

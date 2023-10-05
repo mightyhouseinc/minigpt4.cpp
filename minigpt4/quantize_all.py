@@ -20,8 +20,12 @@ if __name__ == "__main__":
 
     lib = minigpt4_library.load_library()
     for e in minigpt4_library.DataType:
-        if e == minigpt4_library.DataType.F32 or e == minigpt4_library.DataType.I32 or e == minigpt4_library.DataType.L64:
+        if e in [
+            minigpt4_library.DataType.F32,
+            minigpt4_library.DataType.I32,
+            minigpt4_library.DataType.L64,
+        ]:
             continue
         suffix = str(e).removeprefix('DataType.').lower()
-        quantize(lib, src_path, dst_path + f'{dst_prefix}{suffix}.bin', e)
+        quantize(lib, src_path, f'{dst_path}{dst_prefix}{suffix}.bin', e)
         print(f'Finished quantization, wrote to {dst_path}')
